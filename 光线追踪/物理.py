@@ -150,7 +150,9 @@ def sphere_wall(a, b):	#球与墙之间的碰撞
 def sphere_floor(a, b):	#球与地板之间的碰撞
 	v相对位置 = a.m位置[None] - b.m位置
 	v碰撞 = False
-	if b.m天花板:
+	if abs(v相对位置.x) >= b.m半尺寸.x or abs(v相对位置.z) >= b.m半尺寸.y:	#在矩形外
+		pass
+	elif b.m天花板:	#天花板
 		if v相对位置.y > -a.m半径:
 			v相对位置.y = -a.m半径
 			v碰撞 = True
@@ -241,7 +243,7 @@ class C物理:
 					self.m碰撞列表[v优先级].append(v物体碰撞)
 	@ti.kernel
 	def compute(self, dt: float):
-		for i in ti.static(range(len(self.m镜像))):	#镜像计算,把变动转移给原始物体
+		for i in ti.static(range(len(self.m镜像))):	#镜像计算,把变化转移给原始物体
 			self.m镜像[i].compute(self.m传送门组)
 		for i in ti.static(range(len(self.m物体))):	#物体计算
 			self.m物体[i].compute(self.m物理参数, dt)

@@ -7,7 +7,7 @@
 
 #### 运行环境：
 ```
-[Taichi] version 0.8.8, llvm 10.0.0, commit 7bae9c77, win, python 3.9.9
+[Taichi] version 0.8.9, llvm 10.0.0, commit 8a0942ba, win, python 3.9.9
 [Taichi] Starting on arch=cuda
 ```
 
@@ -28,6 +28,7 @@ https://www.bilibili.com/video/BV1Ci4y1X7BT/
 
 * **场景0**：测试场景
 * **场景1**：简单房间和一堆小球
+* **场景2**：两个独立房间，一个有光源一个没光源，明亮房间的光通过传送门照射到黑暗房间。
 
 ### 光线追踪
 
@@ -49,7 +50,7 @@ https://www.bilibili.com/video/BV1Ci4y1X7BT/
 
 ## 实现细节：
 
-懒得写了，具体看《传送门》和《传送门2》的开发者注释吧
+此处省略几万字，具体看《传送门》和《传送门2》的开发者注释吧
 
 ## 广告：自制地图
 
