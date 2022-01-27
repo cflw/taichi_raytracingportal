@@ -3,6 +3,7 @@ from .公共 import *
 #渲染参数
 c采样数 = 16	#每像素光线数
 c最大深度 = 50
+c半深度 = c最大深度 // 2
 c表面采样 = True
 c继续概率 = 0.9
 c模糊率 = 0.4
@@ -78,7 +79,7 @@ class C染色_光线追踪:
 		while v碰撞:
 			#结束条件
 			v当前深度 += 1
-			if v当前深度 > 5 and ti.random() > c继续概率:
+			if v当前深度 > c半深度 and ti.random() > c继续概率:
 				v光线颜色 /= c继续概率
 				break
 			elif v当前深度 > c最大深度:
@@ -86,9 +87,6 @@ class C染色_光线追踪:
 			#根据材质决定如何反射光线
 			if v材质 == E材质.e光源:
 				v光线颜色 *= v物体颜色
-				# v光线颜色.x = min(v光线颜色.x, 2)
-				# v光线颜色.y = min(v光线颜色.y, 2)
-				# v光线颜色.z = min(v光线颜色.z, 2)
 				break
 			elif v材质 == E材质.e漫反射:
 				v目标 = v交点 + v交点法线

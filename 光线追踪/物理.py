@@ -17,7 +17,7 @@ def sphere_point_no_check(a, b):	#球与固定点的碰撞后处理,不检查是
 	v位置a = a.m位置[None]
 	v速度a = a.m速度[None]
 	v方向 = (v位置a - b).normalized()
-	v法线 = v方向.cross(v速度a).cross(v方向).normalized()
+	v法线 = safe_normal(v方向, v速度a)
 	a.m变位置[None] += b + a.m半径 * v方向 - v位置a
 	a.m变速度[None] += -v速度a.dot(v方向)*v方向 + v速度a.dot(v法线)*v法线 - v速度a
 @ti.func
@@ -78,15 +78,6 @@ def sphere_portals(a, b):	#球与两个门之间的碰撞
 	else:
 		a.m靠近门[None] = 0
 	pass
-@ti.func
-def safe_normal(a方向, a速度):	#安全地计算法线,最多返回0,不会有nan
-	v法线 = t向量3(0, 0, 0)
-	if a方向.norm() != 0 and a速度.norm() != 0:
-		v法线 = a方向.cross(a速度).cross(a方向)
-		v范数 = v法线.norm()
-		if v范数 != 0:
-			v法线 /= v范数
-	return v法线
 @ti.func
 def sphere_sphere(a, b):	#球与球之间的碰撞
 	v速度a = a.m速度[None]
@@ -163,6 +154,9 @@ def sphere_floor(a, b):	#球与地板之间的碰撞
 	if v碰撞:
 		a.m变位置[None] += v相对位置 + b.m位置 - a.m位置[None]
 		a.m变速度[None].y -= a.m速度[None].y * 1.99	#有速度损失
+#===============================================================================
+# 碰撞类
+#===============================================================================
 @ti.data_oriented
 class C物体碰撞:
 	def __init__(self, a物体1, a物体2, a函数):
