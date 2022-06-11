@@ -1,5 +1,5 @@
 import taichi as ti
-ti.init(arch = ti.gpu)
+ti.init(arch = ti.vulkan)
 from .场景 import *
 from .物理 import *
 from .投影 import *

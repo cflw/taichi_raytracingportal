@@ -30,7 +30,7 @@ class C透视投射:
 		self.m水平 = 2 * v半宽 * u
 		self.m垂直 = 2 * v半高 * v
 	@ti.func
-	def get_ray(self, u: float, v: float):
+	def f取光线(self, u: float, v: float):
 		return C光线(self.m位置, self.m左下角 + u * self.m水平 + v * self.m垂直 - self.m位置)
 #===============================================================================
 # 正交投影
@@ -52,7 +52,7 @@ class C正交投射:
 		self.m水平 = 2 * v半宽 * u
 		self.m垂直 = 2 * v半高 * v
 	@ti.func
-	def get_ray(self, u: float, v: float):
+	def f取光线(self, u: float, v: float):
 		return C光线(self.m左下角 + u * self.m水平 + v * self.m垂直, self.m方向)
 #===============================================================================
 # 函数

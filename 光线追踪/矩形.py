@@ -11,7 +11,7 @@ class C墙壁:	#竖起来的墙
 		self.m双面渲染 = a双面渲染
 		self.m碰撞 = a碰撞
 	@ti.func
-	def ray_hit(self, a光线, a最小值, a最大值):
+	def f光线碰撞(self, a光线, a最小值, a最大值):
 		#旋转世界,把图片放置于y-z平面
 		c = ti.cos(-self.m旋转)
 		s = ti.sin(-self.m旋转)
@@ -57,7 +57,7 @@ class C地板:	#也可当天花板用
 		self.m双面渲染 = a双面渲染
 		self.m碰撞 = a碰撞
 	@ti.func
-	def ray_hit(self, a光线, a最小值, a最大值):
+	def f光线碰撞(self, a光线, a最小值, a最大值):
 		v相对位置 = a光线.m位置 - self.m位置
 		v碰撞 = False
 		t = 0.0

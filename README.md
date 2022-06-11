@@ -7,8 +7,8 @@
 
 #### 运行环境：
 ```
-[Taichi] version 0.8.9, llvm 10.0.0, commit 8a0942ba, win, python 3.9.9
-[Taichi] Starting on arch=cuda
+[Taichi] version 1.0.2, llvm 10.0.0, commit 14f0acba, win, python 3.10.4
+[Taichi] Starting on arch=vulkan
 ```
 
 #### 运行：
