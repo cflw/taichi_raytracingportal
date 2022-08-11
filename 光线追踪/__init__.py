@@ -10,3 +10,4 @@ from .总控 import *
 from .传送门 import *
 from .矩形 import *
 from .球体 import *
+from .激光 import *

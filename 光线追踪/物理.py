@@ -4,11 +4,16 @@ from .公共 import *
 from .球体 import *
 from .矩形 import *
 from .传送门 import *
+from .激光 import *
 class E与门碰撞(enum.IntEnum):
 	e不碰撞 = enum.auto()
 	e碰撞 = enum.auto()
 	e靠近 = enum.auto()
 	e穿过 = enum.auto()
+class E碰撞优先级(enum.IntEnum):
+	e传送门 = 0
+	e普通 = 1
+	c数量 = enum.auto()
 #===============================================================================
 # 物体碰撞
 #===============================================================================
@@ -154,45 +159,72 @@ def f球体_地板(a, b):	#球与地板之间的碰撞
 	if v碰撞:
 		a.m变位置[None] += v相对位置 + b.m位置 - a.m位置[None]
 		a.m变速度[None].y -= a.m速度[None].y * 1.99	#有速度损失
+@ti.func
+def f激光_球体(a, b):
+	v光线 = C光线(a.m位置[None], a.m方向[None])
+	v碰撞, t, v交点, v交点法线, v前面, v颜色, v材质 = b.f光线碰撞(v光线, c最小值, a.t[None])
+	if v碰撞 and t < a.t[None]:
+		a.t[None] = t
+		a.m尾位置[None] = v交点
+		a.m尾方向[None] = f反射(a.m方向[None], v交点法线)
+		a.m尾激活[None] = v材质 == E材质.e镜面反射
+	else:
+		a.m尾激活[None] = False
+@ti.func
+def f激光_传送门组(a, b):
+	v光线 = C光线(a.m位置[None], a.m方向[None])
+	v碰撞, t, v交点, v交点法线, v前面, v颜色, v材质 = b.f光线碰撞(v光线, c最小值, a.t[None])
+	if v碰撞 and t < a.t[None]:
+		a.t[None] = t
+		a.m尾位置[None] = v交点
+		a.m尾方向[None] = v交点法线
+		a.m尾激活[None] = True
+	else:
+		a.m尾激活[None] = False
 #===============================================================================
 # 碰撞类
 #===============================================================================
 @ti.data_oriented
 class C物体碰撞:
-	def __init__(self, a物体1, a物体2, a函数):
-		self.ma物体1 = a物体1
-		self.ma物体2 = a物体2
-		self.m函数 = a函数
+	def __init__(self, a物体1, a物体2, af碰撞):
+		self.m物体1 = a物体1
+		self.m物体2 = a物体2
+		self.mf碰撞 = af碰撞
 	@staticmethod
 	def f自动(a物体1, a物体2):	#返回:优先级,物体碰撞
 		v类型1 = type(a物体1)
 		v类型2 = type(a物体2)
 		if v类型1 == C球体:
 			if v类型2 == C球体:
-				return 1, C物体碰撞(a物体1, a物体2, f球体_球体)
+				return E碰撞优先级.e普通, C物体碰撞(a物体1, a物体2, f球体_球体)
 			elif v类型2 == C墙壁:
-				return 1, C物体碰撞(a物体1, a物体2, f球体_墙壁)
+				return E碰撞优先级.e普通, C物体碰撞(a物体1, a物体2, f球体_墙壁)
 			elif v类型2 == C地板:
-				return 1, C物体碰撞(a物体1, a物体2, f球体_地板)
+				return E碰撞优先级.e普通, C物体碰撞(a物体1, a物体2, f球体_地板)
 			elif v类型2 == C传送门组:
-				return 0, C物体碰撞(a物体1, a物体2, f球体_传送门组)
+				return E碰撞优先级.e传送门, C物体碰撞(a物体1, a物体2, f球体_传送门组)
 		elif v类型1 == C墙壁:
 			if v类型2 == C球体:
-				return 1, C物体碰撞(a物体2, a物体1, f球体_墙壁)
+				return E碰撞优先级.e普通, C物体碰撞(a物体2, a物体1, f球体_墙壁)
 		elif v类型1 == C地板:
 			if v类型2 == C球体:
-				return 1, C物体碰撞(a物体2, a物体1, f球体_地板)
+				return E碰撞优先级.e普通, C物体碰撞(a物体2, a物体1, f球体_地板)
 		elif v类型1 == C传送门组:
 			if v类型2 == C球体:
-				return 0, C物体碰撞(a物体2, a物体1, f球体_传送门组)
+				return E碰撞优先级.e传送门, C物体碰撞(a物体2, a物体1, f球体_传送门组)
+			if v类型2 == C激光节点:
+				return E碰撞优先级.e传送门, C物体碰撞(a物体2, a物体1, f激光_传送门组)
 		elif v类型1 == C镜像球体:
 			if v类型2 == C球体:
-				return 1, C物体碰撞(a物体1, a物体2, f镜像球体_球体)
+				return E碰撞优先级.e普通, C物体碰撞(a物体1, a物体2, f镜像球体_球体)
+		elif v类型1 == C激光节点:
+			if v类型2 == C传送门组:
+				return E碰撞优先级.e传送门, C物体碰撞(a物体1, a物体2, f激光_传送门组)
 		#没有镜像和镜像之间的碰撞,因为如果两个镜像发生碰撞,则对应的原始物体也必然发生碰撞
 		return 0, None
 	@ti.func
 	def f计算(self):
-		self.m函数(self.ma物体1, self.ma物体2)
+		self.mf碰撞(self.m物体1, self.m物体2)
 #===============================================================================
 # 物理引擎
 #===============================================================================
@@ -206,7 +238,7 @@ class C物理:
 	def __init__(self, a场景, a物理参数):
 		self.m物理参数 = a物理参数
 		self.ma物体 = []
-		self.ma镜像 = a场景.ma镜像
+		self.ma镜像物体 = a场景.ma镜像物体
 		self.ma碰撞 = [[], []]	#开始计算之前,先整成一个碰撞列表,计算时直接遍历这个列表就行
 		self.m传送门组 = None
 		if not a场景:	#可以为空
@@ -227,8 +259,8 @@ class C物理:
 						v优先级, v物体碰撞 = C物体碰撞.f自动(v物体i, v物体j)
 						if v物体碰撞:
 							self.ma碰撞[v优先级].append(v物体碰撞)
-		for i in range(len(a场景.ma镜像)):
-			v镜像i = a场景.ma镜像[i]
+		for i in range(len(a场景.ma镜像物体)):
+			v镜像i = a场景.ma镜像物体[i]
 			for v物体j in self.ma物体:
 				if v镜像i.m物体 == v物体j:
 					continue	#同一个物体
@@ -237,13 +269,16 @@ class C物理:
 					self.ma碰撞[v优先级].append(v物体碰撞)
 	@ti.kernel
 	def f计算(self, dt: float):
-		for i in ti.static(range(len(self.ma镜像))):	#镜像计算,把变化转移给原始物体
-			self.ma镜像[i].f计算(self.m传送门组)
+		for i in ti.static(range(len(self.ma镜像物体))):	#镜像计算,把变化转移给原始物体
+			self.ma镜像物体[i].f更新(self.m传送门组)
 		for i in ti.static(range(len(self.ma物体))):	#物体计算
 			self.ma物体[i].f计算(self.m物理参数, dt)
-		for i in ti.static(range(len(self.ma碰撞[0]))):	#与传送门碰撞
-			self.ma碰撞[0][i].f计算()
-		for i in ti.static(range(len(self.ma镜像))):	#与传送门碰撞后更新镜像状态
-			self.ma镜像[i].f镜像(self.m传送门组)
-		for i in ti.static(range(len(self.ma碰撞[1]))):	#普通物体碰撞
-			self.ma碰撞[1][i].f计算()
+			self.ma物体[i].f更新()
+		for i in ti.static(range(len(self.ma碰撞[E碰撞优先级.e传送门]))):	#与传送门碰撞
+			self.ma碰撞[E碰撞优先级.e传送门][i].f计算()
+		for i in ti.static(range(len(self.ma镜像物体))):	#与传送门碰撞后更新镜像状态
+			self.ma镜像物体[i].f镜像(self.m传送门组)
+		for i in ti.static(range(len(self.ma物体))):	#与传送门碰撞后更新物体状态
+			self.ma物体[i].f更新()		
+		for i in ti.static(range(len(self.ma碰撞[E碰撞优先级.e普通]))):	#普通物体碰撞
+			self.ma碰撞[E碰撞优先级.e普通][i].f计算()

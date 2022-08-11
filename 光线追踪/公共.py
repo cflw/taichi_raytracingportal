@@ -22,6 +22,7 @@ t向量3 = ti.types.vector(3, float)
 t向量4 = ti.types.vector(4, float)
 #向量常量
 c白 = t向量3(1.0, 1.0, 1.0)
+c黑 = t向量3(0.0, 0.0, 0.0)
 c传送门蓝 = t向量3(0.6, 0.6, 2.0)
 c传送门橙 = t向量3(2.0, 1.0, 0.2)
 c背景色 = t向量3(0.0, 0.0, 0.0)
@@ -33,12 +34,15 @@ class E材质(enum.IntEnum):
 	e折射 = enum.auto()
 	e模糊反射 = enum.auto()	#带点模糊的镜面反射
 	e传送门 = enum.auto()
+	e叠加 = enum.auto()
 #===============================================================================
 # 函数
 #===============================================================================
 def f新建场(a类型, a初始值 = None):	#新建一个零维场,并赋值
 	if a类型 in (int, float):	#标量
 		v场 = ti.field(a类型, shape = ())
+	elif a类型 == bool:
+		v场 = ti.field(ti.int32, shape = ())
 	else:
 		v场 = a类型.field(shape = ())
 	if a初始值 != None:
@@ -91,6 +95,17 @@ def f法线(a方向, a速度):	#安全地计算法线,最多返回0,不会有nan
 		if v范数 != 0:
 			v法线 /= v范数
 	return v法线
+@ti.func
+def f异面直线距离(p1, d1, p2, d2):
+	n = d1.cross(d2)
+	return ti.abs(n.dot(p2 - p1)) / n.norm()
+@ti.func
+def f异面直线最近位置(p1, d1, p2, d2):	#位置和方向
+	d3 = d1.cross(d2)	#d1,d2的垂直方向
+	n = d2.cross(d3)	#平面法线
+	a, b, c, d = n.x, n.y, n.z, -n.x*p2.x-n.y*p2.y-n.z*p2.z	#平面方程ax+by+cz+d=0
+	t = -(a*p1.x + b*p1.y + c*p1.z + d) / (a*d1.x + b*d1.y + c*d1.z)	#直线与平面相交位置
+	return t
 #===============================================================================
 # 类
 #===============================================================================
@@ -102,3 +117,11 @@ class C光线:
 	@ti.func
 	def at(self, t: float):
 		return self.m位置 + self.m方向 * t
+@ti.data_oriented
+class I物体:
+	@ti.func
+	def f计算(self, a物理参数, dt):
+		pass
+	@ti.func
+	def f更新(self):
+		pass

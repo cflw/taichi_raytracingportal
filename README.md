@@ -7,7 +7,7 @@
 
 #### 运行环境：
 ```
-[Taichi] version 1.0.2, llvm 10.0.0, commit 14f0acba, win, python 3.10.4
+[Taichi] version 1.1.0, llvm 10.0.0, commit f5bb6464, win, python 3.10.5
 [Taichi] Starting on arch=vulkan
 ```
 
@@ -29,6 +29,7 @@ https://www.bilibili.com/video/BV1Ci4y1X7BT/
 * **场景0**：测试场景
 * **场景1**：简单房间和一堆小球
 * **场景2**：两个独立房间，一个有光源一个没光源，明亮房间的光通过传送门照射到黑暗房间。
+* **场景3**：激光穿过传送门
 
 ### 光线追踪
 

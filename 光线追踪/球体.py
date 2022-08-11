@@ -53,10 +53,13 @@ class C球体:
 	def f光线碰撞(self, a光线, a最小值, a最大值):	#求光线交于圆表面的距离,不相交则返回0
 		return f光线碰撞_球体(a光线, a最小值, a最大值, self.m位置[None], self.m半径, self.m颜色, self.m材质)
 	@ti.func
-	def f计算(self, a物理参数, dt):	#计算
+	def f计算(self, a物理参数, dt):	#计算,把结果加到变化量
+		self.m变速度[None].y -= a物理参数.m重力加速度 * dt
+		self.m变位置[None] += self.m速度[None] * dt
+	@ti.func
+	def f更新(self):	#应用变化量
 		self.m速度[None] += self.m变速度[None]
-		self.m速度[None].y -= a物理参数.m重力加速度 * dt
-		self.m位置[None] += self.m变位置[None] + self.m速度[None] * dt
+		self.m位置[None] += self.m变位置[None]
 		self.m变位置[None] = t向量3(0, 0, 0)
 		self.m变速度[None] = t向量3(0, 0, 0)
 @ti.data_oriented
@@ -85,20 +88,20 @@ class C镜像球体:
 		elif v靠近门 == 2:
 			self.f镜像0(a传送门组.m门2, a传送门组.m门1)
 	@ti.func
-	def f计算0(self, a门1, a门2):
+	def f更新0(self, a门1, a门2):
 		v镜像 = C传送门镜像(a门1, a门2)
 		v变速度 = v镜像.f镜像方向(self.m变速度[None])
 		self.m物体.m速度[None] += v变速度
 		v变位置 = v镜像.f镜像方向(self.m变位置[None])
 		self.m物体.m位置[None] += v变位置
 	@ti.func
-	def f计算(self, a传送门组):
+	def f更新(self, a传送门组):
 		v靠近门 = self.m物体.m靠近门[None]
 		if v靠近门 == 0:
 			pass
 		elif v靠近门 == 1:	#当物体靠近门1时,镜像靠近的是门2
-			self.f计算0(a传送门组.m门2, a传送门组.m门1)
+			self.f更新0(a传送门组.m门2, a传送门组.m门1)
 		elif v靠近门 == 2:
-			self.f计算0(a传送门组.m门1, a传送门组.m门2)
+			self.f更新0(a传送门组.m门1, a传送门组.m门2)
 		self.m变速度[None] = t向量3(0, 0, 0)
 		self.m变位置[None] = t向量3(0, 0, 0)
