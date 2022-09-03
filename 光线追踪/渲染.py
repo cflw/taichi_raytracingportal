@@ -30,7 +30,7 @@ class C渲染:
 				u = (i + ti.random()) / self.m目标.m宽度
 				v = (j + ti.random()) / self.m目标.m高度
 				v光线 = self.m投射.f取光线(u, v)
-				v颜色 += self.m光线染色.f光线染色(self.m场景, v光线)
+				v颜色 += self.m光线染色.f光线染色(self.m场景, v光线, i, j)
 			self.m目标.m图像[i, j] = v颜色 / self.m采样数
 #===============================================================================
 # 渲染方法
@@ -40,53 +40,55 @@ class C染色_物体颜色:
 	def __init__(self):
 		pass
 	@ti.func
-	def f光线染色(self, a场景, a光线):
+	def f光线染色(self, a场景, a光线, x, y):
 		v光线位置 = a光线.m位置
 		v光线方向 = a光线.m方向
 		v光线颜色 = t向量3(0, 0, 0)
-		v碰撞, v交点, v交点法线, v前面, v物体颜色, v材质 = a场景.f光线碰撞(C光线(v光线位置, v光线方向))
+		v碰撞, v交点, v交点法线, v前面, v发光颜色, v反射颜色, v材质 = a场景.f光线碰撞(C光线(v光线位置, v光线方向))
 		if v碰撞:
-			v光线颜色 = v物体颜色
+			v光线颜色 = v发光颜色 + v反射颜色
 		return v光线颜色
 @ti.data_oriented
 class C染色_朗伯反射:
 	def __init__(self, a光源: t向量3):
 		self.m光源 = a光源
 	@ti.func
-	def f光线染色(self, a场景, a光线):
+	def f光线染色(self, a场景, a光线, x, y):
 		v光线位置 = a光线.m位置
 		v光线方向 = a光线.m方向
 		v光线颜色 = t向量3(0, 0, 0)
-		v碰撞, v交点, v交点法线, v前面, v物体颜色, v材质 = a场景.f光线碰撞(C光线(v光线位置, v光线方向))
+		v碰撞, v交点, v交点法线, v前面, v发光颜色, v反射颜色, v材质 = a场景.f光线碰撞(C光线(v光线位置, v光线方向))
 		if v碰撞:
 			if v材质 == E材质.e光源:
-				v光线颜色 = v物体颜色
+				v光线颜色 = v发光颜色 + v反射颜色
 			else:
 				v到光源 = (self.m光源 - v交点).normalized()
-				v光线颜色 = v物体颜色 * ti.max(v到光源.dot(v交点法线) / v到光源.norm() * v交点法线.norm(), 0.0)
+				v光线颜色 = v发光颜色 + v反射颜色 * ti.max(v到光源.dot(v交点法线) / v到光源.norm() * v交点法线.norm(), 0.0)
 		return v光线颜色
 @ti.data_oriented
 class C染色_光线追踪:
-	def __init__(self):
-		pass
+	def __init__(self, a宽度, a高度):
+		self.ma发光颜色 = t向量3.field(shape = (a宽度, a高度, c最大深度))	#太极不支持在太极函数内定义静态数组，先用场代替
+		self.ma反射颜色 = t向量3.field(shape = (a宽度, a高度, c最大深度))
 	@ti.func
-	def f光线染色(self, a场景, a光线):	#光线追踪
+	def f光线染色(self, a场景, a光线, x, y):	#光线追踪
 		v当前深度 = 0
 		v光线位置 = a光线.m位置
 		v光线方向 = a光线.m方向
-		v光线颜色 = t向量3(1, 1, 1)
-		v碰撞, v交点, v交点法线, v前面, v物体颜色, v材质 = a场景.f光线碰撞(C光线(v光线位置, v光线方向))
+		v碰撞, v交点, v交点法线, v前面, v发光颜色, v反射颜色, v材质 = a场景.f光线碰撞(C光线(v光线位置, v光线方向))
 		while v碰撞:
+			d = v当前深度
+			self.ma发光颜色[x, y, d] = v发光颜色
+			self.ma反射颜色[x, y, d] = v反射颜色
 			#结束条件
 			v当前深度 += 1
 			if v当前深度 > c半深度 and ti.random() > c继续概率:
-				v光线颜色 /= c继续概率
+				self.ma反射颜色[x, y, d] /= c继续概率
 				break
 			elif v当前深度 > c最大深度:
 				break
 			#根据材质决定如何反射光线
 			if v材质 == E材质.e光源:
-				v光线颜色 *= v物体颜色
 				break
 			elif v材质 == E材质.e漫反射:
 				v目标 = v交点 + v交点法线
@@ -96,13 +98,11 @@ class C染色_光线追踪:
 					v目标 += f随机单位球体()
 				v光线方向 = v目标 - v交点
 				v光线位置 = v交点
-				v光线颜色 *= v物体颜色
 			elif v材质 == E材质.e镜面反射:
 				v光线方向 = f反射(v光线方向.normalized(), v交点法线)
 				if v光线方向.dot(v交点法线) < 0:
 					break
 				v光线位置 = v交点
-				v光线颜色 *= v物体颜色
 			elif v材质 == E材质.e折射:
 				v折射率 = 1.5
 				if v前面:
@@ -114,7 +114,6 @@ class C染色_光线追踪:
 				else:	#折射
 					v光线方向 = f折射(v光线方向.normalized(), v交点法线, v折射率)
 				v光线位置 = v交点
-				v光线颜色 *= v物体颜色
 			elif v材质 == E材质.e模糊反射:
 				v光线方向 = f反射(v光线方向.normalized(), v交点法线)
 				if c表面采样:
@@ -124,18 +123,19 @@ class C染色_光线追踪:
 				if v光线方向.dot(v交点法线) < 0:
 					break
 				v光线位置 = v交点
-				v光线颜色 *= v物体颜色
 			elif v材质 == E材质.e传送门:
 				v光线位置 = v交点
 				v光线方向 = v交点法线
-				v光线颜色 *= v物体颜色
 			elif v材质 == E材质.e叠加:
 				v光线位置 = v交点
 				v光线方向 = v交点法线
-				# v光线颜色 = lerp(v光线颜色, v物体颜色, (v物体颜色.x + v物体颜色.y + v物体颜色.z) / 3)
-				v光线颜色 += v物体颜色 / v当前深度
 			#新的循环
-			v碰撞, v交点, v交点法线, v前面, v物体颜色, v材质 = a场景.f光线碰撞(C光线(v光线位置, v光线方向))
+			v碰撞, v交点, v交点法线, v前面, v发光颜色, v反射颜色, v材质 = a场景.f光线碰撞(C光线(v光线位置, v光线方向))
+		v光线颜色 = t向量3(1, 1, 1)
 		if v当前深度 == 0:
 			v光线颜色 = c背景色
+		else:
+			for i in range(v当前深度):
+				d = v当前深度 - i - 1	#倒序
+				v光线颜色 = self.ma发光颜色[x, y, d] + self.ma反射颜色[x, y, d] * v光线颜色
 		return v光线颜色
