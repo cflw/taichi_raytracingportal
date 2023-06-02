@@ -7,7 +7,7 @@
 
 #### 运行环境：
 ```
-[Taichi] version 1.1.0, llvm 10.0.0, commit f5bb6464, win, python 3.10.5
+[Taichi] version 1.6.0, llvm 15.0.1, commit f1c6fbbd, win, python 3.11.3
 [Taichi] Starting on arch=vulkan
 ```
 
@@ -29,7 +29,7 @@ https://www.bilibili.com/video/BV1Ci4y1X7BT/
 * **场景0**：测试场景
 * **场景1**：简单房间和一堆小球
 * **场景2**：两个独立房间，一个有光源一个没光源，明亮房间的光通过传送门照射到黑暗房间。
-* **场景3**：激光穿过传送门
+* **场景3**（未完成）：激光穿过传送门
 
 ### 光线追踪
 
@@ -51,7 +51,10 @@ https://www.bilibili.com/video/BV1Ci4y1X7BT/
 
 ## 实现细节：
 
-此处省略几万字，具体看《传送门》和《传送门2》的开发者注释吧
+手把手教你实现《光线追踪传送门》——太极图形课优秀大作业分享
+https://zhuanlan.zhihu.com/p/577751698
+
+剩下的可以看《传送门》和《传送门2》的开发者注释
 
 ## 广告：自制地图
 

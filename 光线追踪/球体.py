@@ -87,7 +87,7 @@ class C镜像球体:
 			self.f镜像0(a传送门组.m门2, a传送门组.m门1)
 	@ti.func
 	def f计算0(self, a门1, a门2):
-		v镜像 = C传送门镜像(a门1, a门2)
+		v镜像 = C传送门镜像.f创建(a门1, a门2)
 		v变速度 = v镜像.f镜像方向(self.m变速度[None])
 		self.m物体.m速度[None] += v变速度
 		v变位置 = v镜像.f镜像方向(self.m变位置[None])

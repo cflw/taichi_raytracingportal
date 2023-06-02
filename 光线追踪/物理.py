@@ -121,8 +121,8 @@ def f镜像球体_球体(a, b):	#镜像球体和普通球体之间的碰撞
 			f球体_球体(a, b)
 @ti.func
 def f球体_墙壁(a, b):	#球与墙之间的碰撞
-	if a.m位置[None].x <= -100:	#可能是太极的bug?把这个if去掉或注释掉会出现穿墙情况,哪怕条件恒不成立也不能去掉,也不能改成False
-		print(a.m位置[None].x, b.m位置)
+	# if a.m位置[None].x <= -100:	#可能是太极的bug?把这个if去掉或注释掉会出现穿墙情况,哪怕条件恒不成立也不能去掉,也不能改成False
+	# 	print(a.m位置[None].x, b.m位置)
 	if a.m靠近门[None] > 0:
 		pass	#球靠近门时不与墙碰撞
 	else:

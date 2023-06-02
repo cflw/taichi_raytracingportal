@@ -86,23 +86,22 @@ class C传送门组:
 #===============================================================================
 @ti.func
 def f传送门镜像(a前, a后, a位置, a方向):	#计算物体位置方向相对于另一个传送门的位置方向
-	v镜像 = C传送门镜像(a前, a后)
+	v镜像 = C传送门镜像.f创建(a前, a后)
 	v位置 = v镜像.f镜像位置(a位置)
 	v方向 = v镜像.f镜像方向(a方向)
 	return v位置, v方向
 @ti.data_oriented
 class C传送门镜像:	#用来计算物体穿过传送门时的相对位置的相对方向的类
-	def __init__(self, a门1, a门2):
+	def __init__(self, a门1, a门2, a旋转1, a旋转2):
 		self.m门1 = a门1
 		self.m门2 = a门2
-		#在 __init__ 写 f旋转矩阵y(-self.m门1.m旋转[None]) 会报错,先用随便矩阵占坑再初始化
-		self.m旋转矩阵1 = ti.Matrix([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-		self.m旋转矩阵2 = ti.Matrix([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
-		self.init()
+		#提前计算好矩阵,方便循环使用
+		self.m旋转矩阵1 = f旋转矩阵y(a旋转1)	#这里写 a门1.m旋转[None] 会报错,所以改成传参
+		self.m旋转矩阵2 = f旋转矩阵y(a旋转2)
+	@staticmethod
 	@ti.func
-	def init(self):
-		self.m旋转矩阵1 = f旋转矩阵y(-self.m门1.m旋转[None])	#提前计算好矩阵,方便循环使用
-		self.m旋转矩阵2 = f旋转矩阵y(self.m门2.m旋转[None])
+	def f创建(a门1, a门2):
+		return C传送门镜像(a门1, a门2, -a门1.m旋转[None], a门2.m旋转[None])
 	@ti.func
 	def f镜像位置(self, a位置):
 		v位置 = a位置

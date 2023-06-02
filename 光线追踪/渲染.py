@@ -20,7 +20,8 @@ class C渲染:
 		self.m目标 = a渲染目标
 		self.m场景 = a场景
 		self.m投射 = a投射器
-		self.m光线染色 = a光线染色 if a光线染色 else C染色_光线追踪()
+		self.m光线染色 = a光线染色 or C染色_光线追踪()
+		self.m光线染色.f初始化_渲染(a渲染目标)
 		self.m采样数 = a采样数
 	@ti.kernel
 	def f渲染(self):
@@ -39,6 +40,8 @@ class C渲染:
 class C染色_物体颜色:
 	def __init__(self):
 		pass
+	def f初始化_渲染(self, a渲染目标):
+		pass
 	@ti.func
 	def f光线染色(self, a场景, a光线, x, y):
 		v光线位置 = a光线.m位置
@@ -52,6 +55,8 @@ class C染色_物体颜色:
 class C染色_朗伯反射:
 	def __init__(self, a光源: t向量3):
 		self.m光源 = a光源
+	def f初始化_渲染(self, a渲染目标):
+		pass
 	@ti.func
 	def f光线染色(self, a场景, a光线, x, y):
 		v光线位置 = a光线.m位置
@@ -67,9 +72,11 @@ class C染色_朗伯反射:
 		return v光线颜色
 @ti.data_oriented
 class C染色_光线追踪:
-	def __init__(self, a宽度, a高度):
-		self.ma发光颜色 = t向量3.field(shape = (a宽度, a高度, c最大深度))	#太极不支持在太极函数内定义静态数组，先用场代替
-		self.ma反射颜色 = t向量3.field(shape = (a宽度, a高度, c最大深度))
+	def __init__(self):
+		pass
+	def f初始化_渲染(self, a渲染目标):
+		self.ma发光颜色 = t向量3.field(shape = (a渲染目标.m宽度, a渲染目标.m高度, c最大深度))	#太极不支持在太极函数内定义静态数组，先用场代替
+		self.ma反射颜色 = t向量3.field(shape = (a渲染目标.m宽度, a渲染目标.m高度, c最大深度))
 	@ti.func
 	def f光线染色(self, a场景, a光线, x, y):	#光线追踪
 		v当前深度 = 0
